@@ -37,14 +37,41 @@ var reverseGeocodeInputObject = {
 
 function useAPIs(){
 	var latlng;
-	for (var i = 1; i < 2; i++) {
+	for (var i = 1; i < 20; i++) {
  		console.log("WWWW");
  		//houseData[i]
  		geocodeInputObject.address = houseData[i];
  		console.log(geocodeInputObject);
  		//call APIs
- 		googleMapsClient.geocode(geocodeInputObject, geocodeCallback);
- 		console.log(latlngString);
+ 		function getLatlng(geocodeInputObject) {
+ 			// body...
+ 			var local_latlng;
+ 			googleMapsClient.geocode(geocodeInputObject, function(err, response){
+ 				var str;
+ 				if (!err) {
+ 				    //console.log(response.json.results[0].address_components);
+ 				    //console.log(response.json.results[0].geometry.location);
+ 				    //console.log("Work");
+ 				    //console.log(response.json.results[0].geometry.location.lat);
+ 				    str = response.json.results[0].geometry.location.lat;
+ 				    str += ',';
+ 				    str += response.json.results[0].geometry.location.lng;
+
+ 				    //console.log(str);
+ 				}
+ 				local_latlng = str;
+ 				console.log(local_latlng);
+
+ 				reverseGeocodeInputObject.latlng = local_latlng;
+ 				console.log(reverseGeocodeInputObject);
+ 				googleMapsClient.reverseGeocode(reverseGeocodeInputObject, reverseGeocodeCallback);
+
+ 			});
+ 			//console.log(local_latlng);
+ 		}
+ 		getLatlng(geocodeInputObject);
+ 		//googleMapsClient.geocode(geocodeInputObject, geocodeCallback);
+ 		//console.log(latlngString);
  		//reverseGeocodeInputObject.latlng = latlng;
  		//call reverse APIs
  		//googleMapsClient.reverseGeocode(reverseGeocodeInputObject, reverseGeocodeCallback);
@@ -65,7 +92,7 @@ function geocodeCallback(err, response){
 	    //console.log(str);
 	}
 	latlngString = str;
-	console.log(latlngString);
+	//console.log(latlngString);
 }
 
 function reverseGeocodeCallback(err, response){
