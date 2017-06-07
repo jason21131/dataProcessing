@@ -76,7 +76,7 @@ var reverseGeocodeInputObject = {
 }
 
 var csvStream = csv.createWriteStream({headers: true}),
-writableStream = fs.createWriteStream("CompleteTest2.csv", {defaultEncoding: 'utf8'});
+writableStream = fs.createWriteStream("CompleteTest3.csv", {defaultEncoding: 'utf8'});
 
 var testString = '嘉義縣太保市北港路二段429巷200弄31~60號';
 var testArray = [];
@@ -128,15 +128,17 @@ function callMultipleTimes( array, callbackFunction ){
 	//var csvStream = csv.createWriteStream({headers: true}),
 	//writableStream = fs.createWriteStream("CompleteTest.csv", {defaultEncoding: 'utf8'});
 	csvStream.pipe(writableStream);			//must be here
-	for( var i=6; i<15; i++ ){
+	for( var i=1; i<5; i++ ){
 		getMoreInfomation( array[i][2], function( output ){
 			console.log(output.formatted_address);
 
 			//callbackFunction(output.formatted_address);
 			//callbackFunction(array[i], output);
+			output.origin = array[i][2];
 			callbackFunction(output);
 			//csvStream.write({googleAPI_return_Address: output.formatted_address });
 		});
+		console.log(array[i][2]);
 	}
 	//csvStream.end();
 }
@@ -145,12 +147,12 @@ function callingIt( output ){
 	console.log(output);
 }
 
-function tryingToOutputCSV( output ){
+function tryingToOutputCSV(output ){
 	//csvStream.pipe(writableStream);
-	csvStream.write({ googleAPI_return_Address: output.formatted_address, lat: output.geometry.location.lat, lng: output.geometry.location.lng });
+	csvStream.write({ Origin: output.origin, googleAPI_return_Address: output.formatted_address, lat: output.geometry.location.lat, lng: output.geometry.location.lng });
 	//csvStream.write({ googleAPI_return_Address: output});
 	//csvStream.write({ googleAPI_return_Address: output.formatted_address, lat: output.geometry.location.lat});
-	console.log(output);
+	//console.log(output);
 }
 
 function getRowObject(array, output){
