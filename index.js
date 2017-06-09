@@ -6,8 +6,10 @@ var csv = require("fast-csv");
 var googleMapsClient = require('@google/maps').createClient({
   key: 'AIzaSyBAPeRnLPRB6FnWW9Iq6cq19x7NucuLqr4'
 });
+var jsonfile = require('jsonfile');
+var file = 'data.json';
 
-var stream = fs.createReadStream("104_house-value.csv", {encoding:'utf-8',bufferSize:11});	//houseAddress.csv city-houseValue.csv
+var stream = fs.createReadStream("104_house-value_cleaned.csv", {encoding:'utf-8',bufferSize:11});	//houseAddress.csv city-houseValue.csv
 var ws = fs.createWriteStream("my.csv", {defaultEncoding: 'utf8'});
 var houseData = [];		//two dimension
 var rowCounter = 0; 	//To count the numbers of row
@@ -37,6 +39,7 @@ csv
      //getMoreInfomation(outputTheResult);
      //getMoreInfomation(houseData, outputTheArray);
      callMultipleTimes( houseData, tryingToOutputCSV );
+     //getMoreInfomation( houseData[6][2], outputTheResult );
      //writingFile( writeCSV );
 
      //useAPIs();
@@ -76,14 +79,13 @@ var reverseGeocodeInputObject = {
 }
 
 var csvStream = csv.createWriteStream({headers: true}),
-writableStream = fs.createWriteStream("CompleteTest2.csv", {defaultEncoding: 'utf8'});
+writableStream = fs.createWriteStream("CompleteTest4.csv", {defaultEncoding: 'utf8'});
 
-var testString = '嘉義縣太保市北港路二段429巷200弄31~60號';
-var testArray = [];
-testArray.push(testString);
-testArray.push('嘉義縣水上鄉南和村15鄰後寮61~90號');
-
-console.log(testArray);
+// var testString = '嘉義縣太保市北港路二段429巷200弄31~60號';
+// var testArray = [];
+// testArray.push(testString);
+// testArray.push('嘉義縣水上鄉南和村15鄰後寮61~90號');
+//console.log(testArray);
 
 function getAddress( inputAdress, callbackFunction ){
 	geocodeInputObject.address = inputAdress;
@@ -101,7 +103,7 @@ function getAddress( inputAdress, callbackFunction ){
 
 function getMoreInfomation( inputAdress, callbackFunction ){
 	getAddress( inputAdress, function( output ){		//input the origin address #testString
-		console.log(output);
+		//console.log(output);
 		reverseGeocodeInputObject.latlng = output;
 		googleMapsClient.reverseGeocode( reverseGeocodeInputObject, function(err, response){
 			if (!err) {
@@ -113,27 +115,27 @@ function getMoreInfomation( inputAdress, callbackFunction ){
 	});
 }
 
-//getMoreInfomation( function( output ){
-	//console.log(output);
-	// function tryingToOutput(){
-	// 	return output;
-	// }
-//});
-
 function outputTheResult(output){
-	console.log(output.formatted_address);
+	var file = 'data.json';
+
+	console.log(output);
+
+	jsonfile.writeFile(file, output, function (err) {
+	  console.error(err);
+	})
 }
 
 function callMultipleTimes( array, callbackFunction ){
 	//var csvStream = csv.createWriteStream({headers: true}),
 	//writableStream = fs.createWriteStream("CompleteTest.csv", {defaultEncoding: 'utf8'});
 	csvStream.pipe(writableStream);			//must be here
-	for( var i=6; i<15; i++ ){
+	for( var i=0; i<array.length; i++ ){
 		getMoreInfomation( array[i][2], function( output ){
 			console.log(output.formatted_address);
 
 			//callbackFunction(output.formatted_address);
 			//callbackFunction(array[i], output);
+			//output.origin = array[i][2];
 			callbackFunction(output);
 			//csvStream.write({googleAPI_return_Address: output.formatted_address });
 		});
@@ -145,12 +147,17 @@ function callingIt( output ){
 	console.log(output);
 }
 
-function tryingToOutputCSV( output ){
+function tryingToOutputCSV(output){
 	//csvStream.pipe(writableStream);
 	csvStream.write({ googleAPI_return_Address: output.formatted_address, lat: output.geometry.location.lat, lng: output.geometry.location.lng });
+	
+	//var output_JSON_stringify = JSON.stringify(output);
+	jsonfile.writeFile(file, output, {flag: 'a'}, function (err) {
+	  console.error(err)
+	})
 	//csvStream.write({ googleAPI_return_Address: output});
 	//csvStream.write({ googleAPI_return_Address: output.formatted_address, lat: output.geometry.location.lat});
-	console.log(output);
+	//console.log(output);
 }
 
 function getRowObject(array, output){
@@ -181,102 +188,4 @@ function writeCSV( writedInfo ){	//array
 
 
 
-/*
-function useAPIs(){
-	var latlng;
-	for (var i = 1; i < 20; i++) {
- 		//console.log("WWWW");
- 		//houseData[i]
- 		geocodeInputObject.address = houseData[i];
- 		console.log(geocodeInputObject);
- 		//call APIs
- 		function getLatlng(geocodeInputObject) {
- 			// body...
- 			var local_latlng;
- 			googleMapsClient.geocode(geocodeInputObject, function(err, response){
- 				var str;
- 				if (!err) {
- 				    //console.log(response.json.results[0].address_components);
- 				    //console.log(response.json.results[0].geometry.location);
- 				    //console.log("Work");
- 				    //console.log(response.json.results[0].geometry.location.lat);
- 				    str = response.json.results[0].geometry.location.lat;
- 				    str += ',';
- 				    str += response.json.results[0].geometry.location.lng;
 
- 				    //console.log(str);
- 				}
- 				local_latlng = str;
- 				console.log(local_latlng);
-
- 				reverseGeocodeInputObject.latlng = local_latlng;
- 				console.log(reverseGeocodeInputObject);
- 				googleMapsClient.reverseGeocode(reverseGeocodeInputObject, reverseGeocodeCallback);
-
- 			});
- 			//console.log(local_latlng);
- 		}
- 		getLatlng(geocodeInputObject);
- 		//googleMapsClient.geocode(geocodeInputObject, geocodeCallback);
- 		//console.log(latlngString);
- 		//reverseGeocodeInputObject.latlng = latlng;
- 		//call reverse APIs
- 		//googleMapsClient.reverseGeocode(reverseGeocodeInputObject, reverseGeocodeCallback);
- 	}
-}
-*/
-
-function geocodeCallback(err, response){
-	var str;
-	if (!err) {
-	    //console.log(response.json.results[0].address_components);
-	    //console.log(response.json.results[0].geometry.location);
-	    //console.log("Work");
-	    //console.log(response.json.results[0].geometry.location.lat);
-	    str = response.json.results[0].geometry.location.lat;
-	    str += ',';
-	    str += response.json.results[0].geometry.location.lng;
-
-	    //console.log(str);
-	}
-	latlngString = str;
-	//console.log(latlngString);
-}
-
-function reverseGeocodeCallback(err, response){
-	if (!err) {
-		console.log(response.json.results[0].address_components);
-	}
-}	
-
-//address: '嘉義縣民雄鄉文隆村鴨母?1~30號'
-
-// googleMapsClient.geocode({
-//   address: '嘉義市蘭州四街31~60號',
-//   language: 'zh-TW'
-// }, function(err, response) {
-//   if (!err) {
-//     console.log(response.json.results[0].address_components);
-//   }
-// });
-
-
-
-function HosueCSV(city, address, value){
-	this.city = city;
-	this.address = address;
-	this.value = value;
-}
-
-
-// var HouseData = [];
-
-// var parser = parse({delimiter: ':'});
-
-// obj,from.path('houseAddress.csv').to.array(function(data){
-// 	for( var i; i<data.length; i++ ){
-// 		HouseData.push( new HosueCSV(data[i][0], data[i][2], data[i][21]) );
-// 	}
-// });
-
-//console.log( HouseData );
